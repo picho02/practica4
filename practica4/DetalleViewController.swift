@@ -6,7 +6,9 @@
 //
 
 import UIKit
-
+import Messages
+import MessageUI
+import FirebaseAuth
 class DetalleViewController: UIViewController {
 
     let scroll = UIScrollView()
@@ -15,6 +17,7 @@ class DetalleViewController: UIViewController {
     let ingredientes = UILabel()
     let labelInstrucciones = UILabel()
     let instrucciones = UILabel()
+    let btnShare = UIButton()
     var imagen = UIImageView()
     var bebida = Bebidas()
       
@@ -43,10 +46,14 @@ class DetalleViewController: UIViewController {
         labelInstrucciones.text = "Instrucciones:"
         instrucciones.text = bebida.directions ?? ""
         imagen.frame = CGRect(x: 0, y: 0, width: 250, height: 250)
+        btnShare.setTitle("Compartir", for: .normal)
+        btnShare.backgroundColor = .blue
+        btnShare.addTarget(self, action: #selector(compartir), for: .touchUpInside)
         self.view.addSubview(scroll) // peleé 2 horas con el codigo por olvidar esta linea
         scroll.addSubview(imagen)
         scroll.addSubview(nombre)
         scroll.addSubview(labelIngredientes)
+        scroll.addSubview(btnShare)
         labelIngredientes.font = labelIngredientes.font.withSize(20)
         scroll.addSubview(ingredientes)
         ingredientes.font = ingredientes.font.withSize(15)
@@ -63,6 +70,7 @@ class DetalleViewController: UIViewController {
         labelInstrucciones.translatesAutoresizingMaskIntoConstraints = false
         instrucciones.translatesAutoresizingMaskIntoConstraints = false
         imagen.translatesAutoresizingMaskIntoConstraints = false
+        btnShare.translatesAutoresizingMaskIntoConstraints = false
 
     }
     override func viewWillLayoutSubviews() {
@@ -105,6 +113,11 @@ class DetalleViewController: UIViewController {
             instrucciones.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
             instrucciones.widthAnchor.constraint(equalTo:scroll.widthAnchor, multiplier: 0.9)
         ])
+        NSLayoutConstraint.activate([
+            btnShare.topAnchor.constraint(equalTo: instrucciones.bottomAnchor, constant: 20),
+            btnShare.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
+            btnShare.widthAnchor.constraint(equalTo:scroll.widthAnchor, multiplier: 0.9)
+        ])
         scroll.contentLayoutGuide.widthAnchor.constraint(equalTo: scroll.frameLayoutGuide.widthAnchor, constant: 0).isActive = true
         scroll.contentLayoutGuide.heightAnchor.constraint(equalTo:scroll.frameLayoutGuide.heightAnchor, constant: 20).isActive = true
     }
@@ -127,5 +140,27 @@ class DetalleViewController: UIViewController {
        }else {
            return false
        }
+    }
+    @objc func compartir(){
+        let defaults = UserDefaults.standard
+        var email = defaults.value(forKey: "email") as? String
+        print(email)
+        if MFMailComposeViewController.canSendMail() {
+            
+            let mvc = MFMailComposeViewController()
+            mvc.setToRecipients(["\(email)"])
+            mvc.setMessageBody("Mira lo que prepare", isHTML: false)
+            let imgData = imagen.image!.pngData()
+            mvc.addAttachmentData(imgData!, mimeType:"image/png", fileName:bebida.image!)
+            mvc.setSubject(bebida.name!)
+            self.present(mvc, animated: true)
+        }
+        else {
+            // PARA COMPARTIR A TODAS LAS APPS COMPATIBLES CON ActivityViewController
+            let objetosParaCompartir:[Any] = [bebida.name, imagen.image]
+            // el argumento "applicationActivities se usa para especificar a que apps queremos compartir, o si preferimos usar la configuración actual del usuario, pasamos nil
+            let ac = UIActivityViewController(activityItems:objetosParaCompartir, applicationActivities: nil)
+            self.present(ac, animated: true)
+        }
     }
 }

@@ -24,6 +24,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 // podria haber mas de una escena en ipados o en Mac os
                 let escena = UIApplication.shared.connectedScenes.first
                 let sd = escena?.delegate as! SceneDelegate
+                let defaults = UserDefaults.standard
+                defaults.removeObject(forKey: "email")
+                defaults.synchronize()
                 sd.cambiarVistaA("")
             }catch{
                 

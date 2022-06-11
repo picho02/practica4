@@ -23,6 +23,9 @@ class LoginViewController: UIViewController {
                     self.present(alert, animated: true, completion: nil)
                 }
             }else{
+                let defaults = UserDefaults.standard
+                defaults.set(self.txtUser.text!, forKey: "email")
+                defaults.synchronize()
                 DispatchQueue.main.async {
                     self.a_i.stopAnimating()
                     self.performSegue(withIdentifier: "goHome", sender: nil)
@@ -43,6 +46,9 @@ class LoginViewController: UIViewController {
             guard let email = alert.textFields![0].text,
                   let pass = alert.textFields![1].text else {return}
                     Auth.auth().createUser(withEmail: email, password: pass) { auth, error in
+                        let defaults = UserDefaults.standard
+                        defaults.set(email, forKey: "email")
+                        defaults.synchronize()
                         if error != nil{
                             print("ocurrio un error \(error!.localizedDescription)")
                         }
@@ -57,7 +63,6 @@ class LoginViewController: UIViewController {
         a_i.color = .red
         a_i.hidesWhenStopped = true
         a_i.center = self.view.center
-        view.backgroundColor = .white
         self.view.addSubview(a_i)
     }
     
